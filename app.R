@@ -311,9 +311,47 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("312", name = "enm")
+              flog.info("Genus match", name = "enm")
               next
             }
+            
+            
+            #Fuzzy match
+            #Genus
+            taxon_list <- taxonomy$ClaGenus
+            
+            fuzzy_match <- find_matching_str(this_taxon_name, database = data.frame(taxon_list), method = method, no_cores = this_cpu_cores)
+            results <- data.frame(match = fuzzy_match$match, score = as.numeric(fuzzy_match$score), stringsAsFactors = FALSE)
+            #filter
+            results_filtered <- dplyr::filter(results, score < threshold)
+            #return top match
+            results_filtered <- dplyr::top_n(x = results_filtered, wt = -score, n = 1)
+            
+            if (dim(results_filtered)[1] > 0){
+              
+              this_match <- which(results_filtered[1,]$match == taxon_list)[1]
+              
+              matched_row <- taxonomy[taxonomy$ID == this_match,]
+              
+              this_row$accepted_name <- matched_row$ClaGenus
+              this_row$synonym <- ""
+              
+              this_row$fuzzy_match <- paste0(results_filtered[1,]$match, " (", results_filtered[1,]$score, ")")
+              
+              this_row$phylum <- matched_row$ClaPhylum
+              this_row$class <- matched_row$ClaClass
+              this_row$order <- matched_row$ClaOrder
+              this_row$family <- matched_row$ClaFamily
+              this_row$genus <- matched_row$ClaGenus
+              this_row$subgenus <- matched_row$ClaSubgenus
+              this_row$species <- matched_row$ClaSpecies
+              this_row$author <- matched_row$AUTHOR.ORIG
+              
+              resultsfile <- rbind(resultsfile, this_row)
+              flog.info("Genus fuzzymatch", name = "enm")
+              next
+            }
+            
             
             
             
@@ -340,7 +378,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
               
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("338", name = "enm")
+              flog.info("Genus subgenus", name = "enm")
               next
             }
             
@@ -366,7 +404,7 @@ server <- function(input, output) {
                 this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
                 
                 resultsfile <- rbind(resultsfile, this_row)
-                flog.info("362", name = "enm")
+                flog.info("Genus subgenus, remove subgenus", name = "enm")
                 next
               }
             }
@@ -389,7 +427,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("384", name = "enm")
+              flog.info("Genus epithet", name = "enm")
               next
             }
             
@@ -417,9 +455,49 @@ server <- function(input, output) {
               this_row$author <- matched_row$AUTHOR.ORIG
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("409", name = "enm")
+              flog.info("Genus epithet by synonym", name = "enm")
               next
             }
+            
+            
+            
+            
+            #Fuzzy match
+            #Genus epithet
+            taxon_list <- paste0(taxonomy$ClaGenus, " ", taxonomy$ClaSpecies)
+            
+            fuzzy_match <- find_matching_str(this_taxon_name, database = data.frame(taxon_list), method = method, no_cores = this_cpu_cores)
+            results <- data.frame(match = fuzzy_match$match, score = as.numeric(fuzzy_match$score), stringsAsFactors = FALSE)
+            #filter
+            results_filtered <- dplyr::filter(results, score < threshold)
+            #return top match
+            results_filtered <- dplyr::top_n(x = results_filtered, wt = -score, n = 1)
+            
+            if (dim(results_filtered)[1] > 0){
+              
+              this_match <- which(results_filtered[1,]$match == taxon_list)[1]
+              
+              matched_row <- taxonomy[taxonomy$ID == this_match,]
+              
+              this_row$accepted_name <- paste0(matched_row$ClaGenus, " ", matched_row$ClaSpecies)
+              this_row$synonym <- ""
+              
+              this_row$fuzzy_match <- paste0(results_filtered[1,]$match, " (", results_filtered[1,]$score, ")")
+              
+              this_row$phylum <- matched_row$ClaPhylum
+              this_row$class <- matched_row$ClaClass
+              this_row$order <- matched_row$ClaOrder
+              this_row$family <- matched_row$ClaFamily
+              this_row$genus <- matched_row$ClaGenus
+              this_row$subgenus <- matched_row$ClaSubgenus
+              this_row$species <- matched_row$ClaSpecies
+              this_row$author <- matched_row$AUTHOR.ORIG
+              
+              resultsfile <- rbind(resultsfile, this_row)
+              flog.info("Genus epithet fuzzymatch", name = "enm")
+              next
+            }
+            
             
             
             
@@ -447,7 +525,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("436", name = "enm")
+              flog.info("Genus subgenus epithet", name = "enm")
               next
             }
             
@@ -472,7 +550,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("458", name = "enm")
+              flog.info("Genus epithet Author", name = "enm")
               next
             }
             
@@ -500,7 +578,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("483", name = "enm")
+              flog.info("Genus epithet Author but remove author", name = "enm")
               next
             }
             
@@ -529,7 +607,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("509", name = "enm")
+              flog.info("Genus subgenus epithet bur remove subgenus", name = "enm")
               next
             }
             
@@ -557,7 +635,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("534", name = "enm")
+              flog.info("Genus epithet subspecies but remove subspecies", name = "enm")
               next
             }
             
@@ -587,12 +665,12 @@ server <- function(input, output) {
               this_row$author <- matched_row$AUTHOR.ORIG
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("562", name = "enm")
+              flog.info("synonym without author/subspecies", name = "enm")
               next
             }
             
             
-            #match to: synonym
+            #match to: Genus subgenus epithet to synonym
             taxon_partial <- paste(strsplit(this_taxon_name, " ")[[1]][1], strsplit(this_taxon_name, " ")[[1]][3])
             this_match <- which(taxon_partial == synonym_list[,2])
             if (length(this_match) > 0){
@@ -616,7 +694,7 @@ server <- function(input, output) {
               this_row$author <- matched_row$AUTHOR.ORIG
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("589", name = "enm")
+              flog.info("Genus subgenus epithet to synonym", name = "enm")
               next
             }
             
@@ -648,7 +726,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("618", name = "enm")
+              flog.info("Genus subgenus epithet Author", name = "enm")
               next
             }
             
@@ -677,7 +755,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("644", name = "enm")
+              flog.info("Genus epithet subspecies Author but remove subspecies", name = "enm")
               next
             }
             
@@ -706,7 +784,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("672", name = "enm")
+              flog.info("Genus epithet subspecies Author but remove subspecies and author", name = "enm")
               next
             }
             
@@ -735,7 +813,7 @@ server <- function(input, output) {
               this_row$author <- matched_row$AUTHOR.ORIG
 
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("701", name = "enm")
+              flog.info("synonym", name = "enm")
               next
             }
             
@@ -783,7 +861,7 @@ server <- function(input, output) {
               this_row$author <- matched_row$AUTHOR.ORIG
               
               resultsfile <- rbind(resultsfile, this_row)
-              flog.info("749", name = "enm")
+              flog.info("Genus [Subgenus] species [author/subspecies/etc] to synonym fuzzy_match", name = "enm")
               next
             }
             
