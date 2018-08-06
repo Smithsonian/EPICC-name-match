@@ -4,6 +4,8 @@ A Shiny app to help the NMNH Paleo collection on their digitization efforts. The
 
 This app takes the string in the column \"Taxonomy\" of a csv file and matches it with the Taxonomy from EPICC. The process tries to find a match taking into account the variety of ways that a scientific name can appear. 
 
+![epicc](https://user-images.githubusercontent.com/2302171/43724155-4caf6298-9967-11e8-8cf0-ce06fd478b01.png)
+
 The process tries to match the string by looking at possible ways a scientific name is written in a collection label by trying to match:
          
   * Genus
