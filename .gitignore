@@ -41,3 +41,5 @@ rsconnect/
 
 settings.R
 *.RData
+
+logs

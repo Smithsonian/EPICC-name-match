@@ -5,8 +5,8 @@ library(shiny)
 library(DT)
 library(dplyr)
 library(stringr)
-library(RSQLite)
 library(stringdist)
+library(futile.logger)
 
 
 
@@ -25,7 +25,7 @@ this_cpu_cores <- 2
 threshold <- 4
 method <- "osa"
 
-
+logfile <- paste0("logs/", format(Sys.time(), "%Y%m%d_%H%M%S"), ".txt")
 
 
 ################################
@@ -72,33 +72,31 @@ ui <- fluidPage(
   p("System to match scientific names to the EPICC Taxonomy."),
   tabsetPanel(type = "tabs",
               tabPanel("Match",  
-                       br(),
-                       fluidRow(
-                         column(width = 3, 
-                                fileInput("taxonomy", "Select the EPICC taxonomy file to use",
-                                          multiple = FALSE,
-                                          accept = c("text/csv",
-                                                     "text/comma-separated-values,text/plain",
-                                                     ".csv")),
-                                uiOutput("taxonomy_info")
-                         ),
-                         column(width = 3, 
-                                fileInput("csv", "Select a csv file to match to the taxonomy",
-                                          multiple = FALSE,
-                                          accept = c("text/csv",
-                                                     "text/comma-separated-values,text/plain",
-                                                     ".csv")),
-                                uiOutput("csv_info")
-                         ),
-                         column(width = 6, 
-                                uiOutput("downloadData"),
-                                br()
-                         )
-                       ),
-                       hr(),
-                       
                        fluidRow(
                          column(width = 8,
+                                br(),
+                                fluidRow(
+                                  column(width = 4, 
+                                         fileInput("taxonomy", "Select the EPICC taxonomy file to use",
+                                                   multiple = FALSE,
+                                                   accept = c("text/csv",
+                                                              "text/comma-separated-values,text/plain",
+                                                              ".csv")),
+                                         uiOutput("taxonomy_info")
+                                  ),
+                                  column(width = 4, 
+                                         fileInput("csv", "Select a csv file to match to the taxonomy",
+                                                   multiple = FALSE,
+                                                   accept = c("text/csv",
+                                                              "text/comma-separated-values,text/plain",
+                                                              ".csv")),
+                                         uiOutput("csv_info")
+                                  ),
+                                  column(width = 4, 
+                                         uiOutput("downloadData"),
+                                         br()
+                                  )
+                                ),
                                 uiOutput("tableheading"),
                                 DT::dataTableOutput("table")
                          ),
@@ -132,6 +130,10 @@ ui <- fluidPage(
 #Server
 ################################
 server <- function(input, output) {
+  
+  #Set logging
+  dir.create('logs', showWarnings = FALSE)
+  flog.logger("enm", INFO, appender=appender.file(logfile))
   
   output$table <- DT::renderDataTable({
     req(input$taxonomy)
@@ -247,6 +249,7 @@ server <- function(input, output) {
         for (j in 1:no_taxons){
           this_taxon_name <- this_taxon[[1]][j]
           cat(paste(this_taxon_name, "\n"))
+          flog.info(this_taxon_name, name = "enm")
           #Remove aff, cf, sp, etc...
           #Remove aff, cf, sp, etc...
           this_taxon_name <- gsub("\"", "", this_taxon_name, fixed = TRUE)
@@ -295,6 +298,9 @@ server <- function(input, output) {
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
               
+              this_row$synonym <- ""
+              this_row$fuzzy_match <- ""
+              
               this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
               this_row$class <- taxonomy$ClaClass[this_match[1]]
               this_row$order <- taxonomy$ClaOrder[this_match[1]]
@@ -305,6 +311,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("312", name = "enm")
               next
             }
             
@@ -320,6 +327,9 @@ server <- function(input, output) {
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
               
+              this_row$synonym <- ""
+              this_row$fuzzy_match <- ""
+              
               this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
               this_row$class <- taxonomy$ClaClass[this_match[1]]
               this_row$order <- taxonomy$ClaOrder[this_match[1]]
@@ -330,6 +340,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
               
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("338", name = "enm")
               next
             }
             
@@ -342,6 +353,9 @@ server <- function(input, output) {
               if (length(this_match) > 0){
                 this_row$accepted_name <- taxon_list[this_match[1]]
                 
+                this_row$synonym <- ""
+                this_row$fuzzy_match <- ""
+                
                 this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
                 this_row$class <- taxonomy$ClaClass[this_match[1]]
                 this_row$order <- taxonomy$ClaOrder[this_match[1]]
@@ -352,6 +366,7 @@ server <- function(input, output) {
                 this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
                 
                 resultsfile <- rbind(resultsfile, this_row)
+                flog.info("362", name = "enm")
                 next
               }
             }
@@ -374,6 +389,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("384", name = "enm")
               next
             }
             
@@ -388,6 +404,9 @@ server <- function(input, output) {
               
               this_row$accepted_name <- paste0(matched_row$ClaGenus, " ", matched_row$ClaSpecies)
               this_row$synonym <- this_taxon_name
+
+              this_row$fuzzy_match <- ""
+
               this_row$phylum <- matched_row$ClaPhylum
               this_row$class <- matched_row$ClaClass
               this_row$order <- matched_row$ClaOrder
@@ -398,6 +417,7 @@ server <- function(input, output) {
               this_row$author <- matched_row$AUTHOR.ORIG
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("409", name = "enm")
               next
             }
             
@@ -414,26 +434,8 @@ server <- function(input, output) {
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
               
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
-
-              resultsfile <- rbind(resultsfile, this_row)
-              next
-            }
-            
-            #5 match to: Genus epithet Author
-            taxon_list <- paste0(taxonomy$ClaGenus, " ", taxonomy$ClaSpecies, " ", taxonomy$AUTHOR.ORIG)
-            taxon_list <- gsub("[  ]", " ", taxon_list)
-            
-            this_match <- which(taxon_list == this_taxon_name)
-            if (length(this_match) > 0){
-              this_row$accepted_name <- taxon_list[this_match[1]]
+              this_row$synonym <- ""
+              this_row$fuzzy_match <- ""
               
               this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
               this_row$class <- taxonomy$ClaClass[this_match[1]]
@@ -445,6 +447,32 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("436", name = "enm")
+              next
+            }
+            
+            #5 match to: Genus epithet Author
+            taxon_list <- paste0(taxonomy$ClaGenus, " ", taxonomy$ClaSpecies, " ", taxonomy$AUTHOR.ORIG)
+            taxon_list <- gsub("[  ]", " ", taxon_list)
+            
+            this_match <- which(taxon_list == this_taxon_name)
+            if (length(this_match) > 0){
+              this_row$accepted_name <- taxon_list[this_match[1]]
+              
+              this_row$synonym <- ""
+              this_row$fuzzy_match <- ""
+              
+              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
+              this_row$class <- taxonomy$ClaClass[this_match[1]]
+              this_row$order <- taxonomy$ClaOrder[this_match[1]]
+              this_row$family <- taxonomy$ClaFamily[this_match[1]]
+              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
+              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
+              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+
+              resultsfile <- rbind(resultsfile, this_row)
+              flog.info("458", name = "enm")
               next
             }
             
@@ -459,6 +487,9 @@ server <- function(input, output) {
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
               
+              this_row$synonym <- ""
+              this_row$fuzzy_match <- ""
+              
               this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
               this_row$class <- taxonomy$ClaClass[this_match[1]]
               this_row$order <- taxonomy$ClaOrder[this_match[1]]
@@ -469,6 +500,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("483", name = "enm")
               next
             }
             
@@ -484,6 +516,9 @@ server <- function(input, output) {
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
               
+              this_row$synonym <- ""
+              this_row$fuzzy_match <- ""
+              
               this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
               this_row$class <- taxonomy$ClaClass[this_match[1]]
               this_row$order <- taxonomy$ClaOrder[this_match[1]]
@@ -494,6 +529,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("509", name = "enm")
               next
             }
             
@@ -508,6 +544,9 @@ server <- function(input, output) {
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
               
+              this_row$synonym <- ""
+              this_row$fuzzy_match <- ""
+              
               this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
               this_row$class <- taxonomy$ClaClass[this_match[1]]
               this_row$order <- taxonomy$ClaOrder[this_match[1]]
@@ -518,6 +557,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("534", name = "enm")
               next
             }
             
@@ -534,7 +574,9 @@ server <- function(input, output) {
               
               this_row$accepted_name <- paste0(matched_row$ClaGenus, " ", matched_row$ClaSpecies)
               this_row$synonym <- taxon_partial
-              
+
+              this_row$fuzzy_match <- ""
+
               this_row$phylum <- matched_row$ClaPhylum
               this_row$class <- matched_row$ClaClass
               this_row$order <- matched_row$ClaOrder
@@ -545,6 +587,7 @@ server <- function(input, output) {
               this_row$author <- matched_row$AUTHOR.ORIG
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("562", name = "enm")
               next
             }
             
@@ -561,6 +604,8 @@ server <- function(input, output) {
               this_row$accepted_name <- paste0(matched_row$ClaGenus, " ", matched_row$ClaSpecies)
               this_row$synonym <- taxon_partial
               
+              this_row$fuzzy_match <- ""
+              
               this_row$phylum <- matched_row$ClaPhylum
               this_row$class <- matched_row$ClaClass
               this_row$order <- matched_row$ClaOrder
@@ -571,6 +616,7 @@ server <- function(input, output) {
               this_row$author <- matched_row$AUTHOR.ORIG
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("589", name = "enm")
               next
             }
             
@@ -588,7 +634,10 @@ server <- function(input, output) {
             this_match <- which(taxon_list == this_taxon_name)
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
-              
+
+              this_row$synonym <- ""
+              this_row$fuzzy_match <- ""              
+
               this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
               this_row$class <- taxonomy$ClaClass[this_match[1]]
               this_row$order <- taxonomy$ClaOrder[this_match[1]]
@@ -599,6 +648,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("618", name = "enm")
               next
             }
             
@@ -614,6 +664,9 @@ server <- function(input, output) {
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
               
+              this_row$synonym <- ""
+              this_row$fuzzy_match <- ""
+              
               this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
               this_row$class <- taxonomy$ClaClass[this_match[1]]
               this_row$order <- taxonomy$ClaOrder[this_match[1]]
@@ -624,6 +677,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("644", name = "enm")
               next
             }
             
@@ -640,7 +694,8 @@ server <- function(input, output) {
             this_match <- which(taxon_list == taxon_partial)
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
-              
+              this_row$synonym <- ""
+              this_row$fuzzy_match <- ""
               this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
               this_row$class <- taxonomy$ClaClass[this_match[1]]
               this_row$order <- taxonomy$ClaOrder[this_match[1]]
@@ -651,6 +706,7 @@ server <- function(input, output) {
               this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("672", name = "enm")
               next
             }
             
@@ -668,7 +724,7 @@ server <- function(input, output) {
               
               this_row$accepted_name <- paste0(matched_row$ClaGenus, " ", matched_row$ClaSpecies)
               this_row$synonym <- taxon_partial
-              
+              this_row$fuzzy_match <- ""
               this_row$phylum <- matched_row$ClaPhylum
               this_row$class <- matched_row$ClaClass
               this_row$order <- matched_row$ClaOrder
@@ -679,6 +735,7 @@ server <- function(input, output) {
               this_row$author <- matched_row$AUTHOR.ORIG
 
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("701", name = "enm")
               next
             }
             
@@ -726,6 +783,7 @@ server <- function(input, output) {
               this_row$author <- matched_row$AUTHOR.ORIG
               
               resultsfile <- rbind(resultsfile, this_row)
+              flog.info("749", name = "enm")
               next
             }
             
@@ -733,14 +791,38 @@ server <- function(input, output) {
           }
           
           #nothing found, return the same
+          this_row$accepted_name <- ""
+          this_row$synonym <- ""
+          this_row$fuzzy_match <- ""
+          this_row$phylum <- ""
+          this_row$class <- ""
+          this_row$order <- ""
+          this_row$family <- ""
+          this_row$genus <- ""
+          this_row$subgenus <- ""
+          this_row$species <- ""
+          this_row$author <- ""
           resultsfile <- rbind(resultsfile, this_row)
+          flog.info("No match found", name = "enm")
           next
           
         }
           
       }else{
         
+        this_row$accepted_name <- ""
+        this_row$synonym <- ""
+        this_row$fuzzy_match <- ""
+        this_row$phylum <- ""
+        this_row$class <- ""
+        this_row$order <- ""
+        this_row$family <- ""
+        this_row$genus <- ""
+        this_row$subgenus <- ""
+        this_row$species <- ""
+        this_row$author <- ""
         resultsfile <- rbind(resultsfile, this_row)
+        flog.info("No match found", name = "enm")
         next
         
       }
@@ -754,14 +836,13 @@ server <- function(input, output) {
     resultsfile <<- resultsfile
     
     resultssummary <- data.frame(irn = resultsfile$irn, Taxonomy = resultsfile$Taxonomy, sciname = resultsfile$sciname, accepted_name = resultsfile$accepted_name, synonym = resultsfile$synonym, fuzzy_match = resultsfile$fuzzy_match)
-    #resultssummary <- data.frame(irn = resultsfile$irn, Taxonomy = resultsfile$Taxonomy, sciname = resultsfile$sciname, accepted_name = resultsfile$accepted_name, synonym = resultsfile$synonym)
-    
+
     DT::datatable(resultssummary, escape = FALSE, options = list(searching = TRUE, ordering = TRUE, pageLength = 15), rownames = FALSE, selection = 'single')
     
     })
   
   
-
+  
   
   
     
@@ -771,7 +852,7 @@ server <- function(input, output) {
     
     tagList(
       h3("Results"),
-      p("Select a row to see the details")
+      p("Click on a row to see the details")
     )
   })
   
@@ -794,7 +875,7 @@ server <- function(input, output) {
     }
     
     tagList(
-        HTML("<div class=\"panel panel-success\"> <div class=\"panel-heading\"> <h3 class=\"panel-title\">Result selected</h3> </div> <div class=\"panel-body\"><dl class=\"dl-horizontal\">"),
+        HTML("<div class=\"panel panel-success\"> <div class=\"panel-heading\"> <h3 class=\"panel-title\">Row selected</h3> </div> <div class=\"panel-body\"><dl class=\"dl-horizontal\">"),
         HTML(list_data),
         HTML("</dl></div></div>")
       )
@@ -821,7 +902,12 @@ server <- function(input, output) {
   output$downloadData <- renderUI({
     req(input$taxonomy)
     req(input$csv)
-    downloadButton("downloadData2", "Download CSV with results", class = "btn-primary")  
+    tagList(
+      HTML("<label>Download csv file with results</label>"),
+      br(),
+      downloadButton("downloadData2", "Download CSV", class = "btn-primary")  
+    )
+    
   })
   
 
@@ -869,7 +955,8 @@ server <- function(input, output) {
          <li>?</li>
          <li>af.</li>
          <li>cf.</li>
-         <li>sp.</li>
+         <li>spp.</li>
+         <li>n. sp.</li>
          </ul>
          <p>Then, the system tries to match the string by looking at possible ways to match:
          <ul>

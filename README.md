@@ -22,11 +22,11 @@ This app requires the following R packages:
  * DT
  * dplyr
  * stringr
- * RSQLite
  * stringdist
+ * futile.logger
 
 To install:
 
 ```R
-install.packages("shiny", "DT", "dplyr", "stringr", "RSQLite", "stringdist")
+install.packages("shiny", "DT", "dplyr", "stringr", "stringdist", "futile.logger")
 ```
