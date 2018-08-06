@@ -15,7 +15,7 @@ library(futile.logger)
 ################################
 
 app_name <- "EPICC Name Match"
-app_ver <- "0.2"
+app_ver <- "0.2.1"
 github_link <- "https://github.com/Smithsonian/EPICC-name-match"
 
 options(stringsAsFactors = FALSE)
@@ -149,14 +149,14 @@ server <- function(input, output) {
       taxonomy <- read.csv(input$taxonomy$datapath, header = TRUE, stringsAsFactors = FALSE, encoding = "UTF-8")
       
       taxonomy <- dplyr::select(taxonomy, c(
-        "ClaPhylum",
-        "ClaClass",
-        "ClaOrder",
-        "ClaFamily",
-        "ClaGenus",
-        "ClaSubgenus",
-        "ClaSpecies",
-        "AUTHOR.ORIG",
+        "PHYLUM",
+        "CLASS",
+        "ORDER",
+        "FAMILY",
+        "GENUS",
+        "SUBGENUS",
+        "SPECIES",
+        "AUTHOR",
         "SYNONYMS"))
       taxonomy$ID <- seq.int(nrow(taxonomy))
       
@@ -293,22 +293,22 @@ server <- function(input, output) {
             
             #For Genus
             #1 match to: Genus
-            taxon_list <- taxonomy$ClaGenus
-            this_match <- which(taxon_list == this_taxon_name)
+            taxon_list <- taxonomy$GENUS
+            this_match <- which(tolower(taxon_list) == tolower(this_taxon_name))
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
               
               this_row$synonym <- ""
               this_row$fuzzy_match <- ""
               
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+              this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+              this_row$class <- taxonomy$CLASS[this_match[1]]
+              this_row$order <- taxonomy$ORDER[this_match[1]]
+              this_row$family <- taxonomy$FAMILY[this_match[1]]
+              this_row$genus <- taxonomy$GENUS[this_match[1]]
+              this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+              this_row$species <- taxonomy$SPECIES[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus match", name = "enm")
@@ -318,7 +318,7 @@ server <- function(input, output) {
             
             #Fuzzy match
             #Genus
-            taxon_list <- taxonomy$ClaGenus
+            taxon_list <- taxonomy$GENUS
             
             fuzzy_match <- find_matching_str(this_taxon_name, database = data.frame(taxon_list), method = method, no_cores = this_cpu_cores)
             results <- data.frame(match = fuzzy_match$match, score = as.numeric(fuzzy_match$score), stringsAsFactors = FALSE)
@@ -333,19 +333,19 @@ server <- function(input, output) {
               
               matched_row <- taxonomy[taxonomy$ID == this_match,]
               
-              this_row$accepted_name <- matched_row$ClaGenus
+              this_row$accepted_name <- matched_row$GENUS
               this_row$synonym <- ""
               
               this_row$fuzzy_match <- paste0(results_filtered[1,]$match, " (", results_filtered[1,]$score, ")")
               
-              this_row$phylum <- matched_row$ClaPhylum
-              this_row$class <- matched_row$ClaClass
-              this_row$order <- matched_row$ClaOrder
-              this_row$family <- matched_row$ClaFamily
-              this_row$genus <- matched_row$ClaGenus
-              this_row$subgenus <- matched_row$ClaSubgenus
-              this_row$species <- matched_row$ClaSpecies
-              this_row$author <- matched_row$AUTHOR.ORIG
+              this_row$phylum <- matched_row$PHYLUM
+              this_row$class <- matched_row$CLASS
+              this_row$order <- matched_row$ORDER
+              this_row$family <- matched_row$FAMILY
+              this_row$genus <- matched_row$GENUS
+              this_row$subgenus <- matched_row$SUBGENUS
+              this_row$species <- matched_row$SPECIES
+              this_row$author <- matched_row$AUTHOR
               
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus fuzzymatch", name = "enm")
@@ -360,7 +360,7 @@ server <- function(input, output) {
             
             #check if Genus subgenus
             #Cardium (Cerastoderma?) sp.
-            taxon_list <- paste0(taxonomy$ClaGenus, " (", taxonomy$ClaSubgenus, ")")
+            taxon_list <- paste0(taxonomy$GENUS, " (", taxonomy$SUBGENUS, ")")
             this_match <- which(taxon_list == this_taxon_name)
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
@@ -368,14 +368,14 @@ server <- function(input, output) {
               this_row$synonym <- ""
               this_row$fuzzy_match <- ""
               
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+              this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+              this_row$class <- taxonomy$CLASS[this_match[1]]
+              this_row$order <- taxonomy$ORDER[this_match[1]]
+              this_row$family <- taxonomy$FAMILY[this_match[1]]
+              this_row$genus <- taxonomy$GENUS[this_match[1]]
+              this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+              this_row$species <- taxonomy$SPECIES[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR[this_match[1]]
               
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus subgenus", name = "enm")
@@ -386,7 +386,7 @@ server <- function(input, output) {
             #check if Genus subgenus, remove subgenus
             if (grepl("[(]", this_taxon_name)){
               taxon_partial <- paste(strsplit(this_taxon_name, " ")[[1]][1])
-              taxon_list <- paste0(taxonomy$ClaGenus)
+              taxon_list <- paste0(taxonomy$GENUS)
               this_match <- which(taxon_list == taxon_partial)
               if (length(this_match) > 0){
                 this_row$accepted_name <- taxon_list[this_match[1]]
@@ -394,14 +394,14 @@ server <- function(input, output) {
                 this_row$synonym <- ""
                 this_row$fuzzy_match <- ""
                 
-                this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-                this_row$class <- taxonomy$ClaClass[this_match[1]]
-                this_row$order <- taxonomy$ClaOrder[this_match[1]]
-                this_row$family <- taxonomy$ClaFamily[this_match[1]]
-                this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-                this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-                this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-                this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+                this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+                this_row$class <- taxonomy$CLASS[this_match[1]]
+                this_row$order <- taxonomy$ORDER[this_match[1]]
+                this_row$family <- taxonomy$FAMILY[this_match[1]]
+                this_row$genus <- taxonomy$GENUS[this_match[1]]
+                this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+                this_row$species <- taxonomy$SPECIES[this_match[1]]
+                this_row$author <- taxonomy$AUTHOR[this_match[1]]
                 
                 resultsfile <- rbind(resultsfile, this_row)
                 flog.info("Genus subgenus, remove subgenus", name = "enm")
@@ -412,19 +412,19 @@ server <- function(input, output) {
             
             
             #2 match to: Genus epithet
-            taxon_list <- paste0(taxonomy$ClaGenus, " ", taxonomy$ClaSpecies)
+            taxon_list <- paste0(taxonomy$GENUS, " ", taxonomy$SPECIES)
             this_match <- which(taxon_list == this_taxon_name)
             if (length(this_match) > 0){
               this_row$accepted_name <- taxon_list[this_match[1]]
               
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+              this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+              this_row$class <- taxonomy$CLASS[this_match[1]]
+              this_row$order <- taxonomy$ORDER[this_match[1]]
+              this_row$family <- taxonomy$FAMILY[this_match[1]]
+              this_row$genus <- taxonomy$GENUS[this_match[1]]
+              this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+              this_row$species <- taxonomy$SPECIES[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus epithet", name = "enm")
@@ -440,19 +440,19 @@ server <- function(input, output) {
               
               matched_row <- taxonomy[taxonomy$ID == this_id,]
               
-              this_row$accepted_name <- paste0(matched_row$ClaGenus, " ", matched_row$ClaSpecies)
+              this_row$accepted_name <- paste0(matched_row$GENUS, " ", matched_row$SPECIES)
               this_row$synonym <- this_taxon_name
 
               this_row$fuzzy_match <- ""
 
-              this_row$phylum <- matched_row$ClaPhylum
-              this_row$class <- matched_row$ClaClass
-              this_row$order <- matched_row$ClaOrder
-              this_row$family <- matched_row$ClaFamily
-              this_row$genus <- matched_row$ClaGenus
-              this_row$subgenus <- matched_row$ClaSubgenus
-              this_row$species <- matched_row$ClaSpecies
-              this_row$author <- matched_row$AUTHOR.ORIG
+              this_row$phylum <- matched_row$PHYLUM
+              this_row$class <- matched_row$CLASS
+              this_row$order <- matched_row$ORDER
+              this_row$family <- matched_row$FAMILY
+              this_row$genus <- matched_row$GENUS
+              this_row$subgenus <- matched_row$SUBGENUS
+              this_row$species <- matched_row$SPECIES
+              this_row$author <- matched_row$AUTHOR
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus epithet by synonym", name = "enm")
@@ -464,7 +464,7 @@ server <- function(input, output) {
             
             #Fuzzy match
             #Genus epithet
-            taxon_list <- paste0(taxonomy$ClaGenus, " ", taxonomy$ClaSpecies)
+            taxon_list <- paste0(taxonomy$GENUS, " ", taxonomy$SPECIES)
             
             fuzzy_match <- find_matching_str(this_taxon_name, database = data.frame(taxon_list), method = method, no_cores = this_cpu_cores)
             results <- data.frame(match = fuzzy_match$match, score = as.numeric(fuzzy_match$score), stringsAsFactors = FALSE)
@@ -479,19 +479,19 @@ server <- function(input, output) {
               
               matched_row <- taxonomy[taxonomy$ID == this_match,]
               
-              this_row$accepted_name <- paste0(matched_row$ClaGenus, " ", matched_row$ClaSpecies)
+              this_row$accepted_name <- paste0(matched_row$GENUS, " ", matched_row$SPECIES)
               this_row$synonym <- ""
               
               this_row$fuzzy_match <- paste0(results_filtered[1,]$match, " (", results_filtered[1,]$score, ")")
               
-              this_row$phylum <- matched_row$ClaPhylum
-              this_row$class <- matched_row$ClaClass
-              this_row$order <- matched_row$ClaOrder
-              this_row$family <- matched_row$ClaFamily
-              this_row$genus <- matched_row$ClaGenus
-              this_row$subgenus <- matched_row$ClaSubgenus
-              this_row$species <- matched_row$ClaSpecies
-              this_row$author <- matched_row$AUTHOR.ORIG
+              this_row$phylum <- matched_row$PHYLUM
+              this_row$class <- matched_row$CLASS
+              this_row$order <- matched_row$ORDER
+              this_row$family <- matched_row$FAMILY
+              this_row$genus <- matched_row$GENUS
+              this_row$subgenus <- matched_row$SUBGENUS
+              this_row$species <- matched_row$SPECIES
+              this_row$author <- matched_row$AUTHOR
               
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus epithet fuzzymatch", name = "enm")
@@ -505,8 +505,8 @@ server <- function(input, output) {
           }else if (this_taxon_nowords == 3){
           
             #3 match to: Genus subgenus epithet
-            taxon_list <- paste0(taxonomy$ClaGenus, " (", taxonomy$ClaSubgenus, ") ", taxonomy$ClaSpecies)
-            taxon_list <- gsub(" [(][)] ", " ", taxon_list)
+            taxon_list <- paste0(taxonomy$GENUS, " ", taxonomy$SUBGENUS, " ", taxonomy$SPECIES)
+            #taxon_list <- gsub(" [(][)] ", " ", taxon_list)
             
             this_match <- which(taxon_list == this_taxon_name)
             if (length(this_match) > 0){
@@ -515,14 +515,14 @@ server <- function(input, output) {
               this_row$synonym <- ""
               this_row$fuzzy_match <- ""
               
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+              this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+              this_row$class <- taxonomy$CLASS[this_match[1]]
+              this_row$order <- taxonomy$ORDER[this_match[1]]
+              this_row$family <- taxonomy$FAMILY[this_match[1]]
+              this_row$genus <- taxonomy$GENUS[this_match[1]]
+              this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+              this_row$species <- taxonomy$SPECIES[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus subgenus epithet", name = "enm")
@@ -530,7 +530,7 @@ server <- function(input, output) {
             }
             
             #5 match to: Genus epithet Author
-            taxon_list <- paste0(taxonomy$ClaGenus, " ", taxonomy$ClaSpecies, " ", taxonomy$AUTHOR.ORIG)
+            taxon_list <- paste0(taxonomy$GENUS, " ", taxonomy$SPECIES, " ", taxonomy$AUTHOR)
             taxon_list <- gsub("[  ]", " ", taxon_list)
             
             this_match <- which(taxon_list == this_taxon_name)
@@ -540,14 +540,14 @@ server <- function(input, output) {
               this_row$synonym <- ""
               this_row$fuzzy_match <- ""
               
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+              this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+              this_row$class <- taxonomy$CLASS[this_match[1]]
+              this_row$order <- taxonomy$ORDER[this_match[1]]
+              this_row$family <- taxonomy$FAMILY[this_match[1]]
+              this_row$genus <- taxonomy$GENUS[this_match[1]]
+              this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+              this_row$species <- taxonomy$SPECIES[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus epithet Author", name = "enm")
@@ -556,7 +556,7 @@ server <- function(input, output) {
             
             
             #match to: Genus epithet Author but remove author
-            taxon_list <- paste0(taxonomy$ClaGenus, " ", taxonomy$ClaSpecies)
+            taxon_list <- paste0(taxonomy$GENUS, " ", taxonomy$SPECIES)
             taxon_list <- gsub("[  ]", " ", taxon_list)
             
             taxon_partial <- paste(strsplit(this_taxon_name, " ")[[1]][1], strsplit(this_taxon_name, " ")[[1]][2])
@@ -568,14 +568,14 @@ server <- function(input, output) {
               this_row$synonym <- ""
               this_row$fuzzy_match <- ""
               
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+              this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+              this_row$class <- taxonomy$CLASS[this_match[1]]
+              this_row$order <- taxonomy$ORDER[this_match[1]]
+              this_row$family <- taxonomy$FAMILY[this_match[1]]
+              this_row$genus <- taxonomy$GENUS[this_match[1]]
+              this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+              this_row$species <- taxonomy$SPECIES[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus epithet Author but remove author", name = "enm")
@@ -585,7 +585,7 @@ server <- function(input, output) {
             
             
             #match to: Genus subgenus epithet bur remove subgenus
-            taxon_list <- paste0(taxonomy$ClaGenus, " ", taxonomy$ClaSpecies)
+            taxon_list <- paste0(taxonomy$GENUS, " ", taxonomy$SPECIES)
             taxon_list <- gsub("[  ]", " ", taxon_list)
             
             taxon_partial <- paste(strsplit(this_taxon_name, " ")[[1]][1], strsplit(this_taxon_name, " ")[[1]][3])
@@ -597,14 +597,14 @@ server <- function(input, output) {
               this_row$synonym <- ""
               this_row$fuzzy_match <- ""
               
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+              this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+              this_row$class <- taxonomy$CLASS[this_match[1]]
+              this_row$order <- taxonomy$ORDER[this_match[1]]
+              this_row$family <- taxonomy$FAMILY[this_match[1]]
+              this_row$genus <- taxonomy$GENUS[this_match[1]]
+              this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+              this_row$species <- taxonomy$SPECIES[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus subgenus epithet bur remove subgenus", name = "enm")
@@ -613,7 +613,7 @@ server <- function(input, output) {
             
             
             #match to: Genus epithet subspecies but remove subspecies
-            taxon_list <- paste0(taxonomy$ClaGenus, " ", taxonomy$ClaSpecies)
+            taxon_list <- paste0(taxonomy$GENUS, " ", taxonomy$SPECIES)
             taxon_list <- gsub("[  ]", " ", taxon_list)
             
             taxon_partial <- paste(strsplit(this_taxon_name, " ")[[1]][1], strsplit(this_taxon_name, " ")[[1]][2])
@@ -625,14 +625,14 @@ server <- function(input, output) {
               this_row$synonym <- ""
               this_row$fuzzy_match <- ""
               
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+              this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+              this_row$class <- taxonomy$CLASS[this_match[1]]
+              this_row$order <- taxonomy$ORDER[this_match[1]]
+              this_row$family <- taxonomy$FAMILY[this_match[1]]
+              this_row$genus <- taxonomy$GENUS[this_match[1]]
+              this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+              this_row$species <- taxonomy$SPECIES[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus epithet subspecies but remove subspecies", name = "enm")
@@ -650,19 +650,19 @@ server <- function(input, output) {
               
               matched_row <- taxonomy[taxonomy$ID == this_id,]
               
-              this_row$accepted_name <- paste0(matched_row$ClaGenus, " ", matched_row$ClaSpecies)
+              this_row$accepted_name <- paste0(matched_row$GENUS, " ", matched_row$SPECIES)
               this_row$synonym <- taxon_partial
 
               this_row$fuzzy_match <- ""
 
-              this_row$phylum <- matched_row$ClaPhylum
-              this_row$class <- matched_row$ClaClass
-              this_row$order <- matched_row$ClaOrder
-              this_row$family <- matched_row$ClaFamily
-              this_row$genus <- matched_row$ClaGenus
-              this_row$subgenus <- matched_row$ClaSubgenus
-              this_row$species <- matched_row$ClaSpecies
-              this_row$author <- matched_row$AUTHOR.ORIG
+              this_row$phylum <- matched_row$PHYLUM
+              this_row$class <- matched_row$CLASS
+              this_row$order <- matched_row$ORDER
+              this_row$family <- matched_row$FAMILY
+              this_row$genus <- matched_row$GENUS
+              this_row$subgenus <- matched_row$SUBGENUS
+              this_row$species <- matched_row$SPECIES
+              this_row$author <- matched_row$AUTHOR
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("synonym without author/subspecies", name = "enm")
@@ -679,19 +679,19 @@ server <- function(input, output) {
               
               matched_row <- taxonomy[taxonomy$ID == this_id,]
               
-              this_row$accepted_name <- paste0(matched_row$ClaGenus, " ", matched_row$ClaSpecies)
+              this_row$accepted_name <- paste0(matched_row$GENUS, " ", matched_row$SPECIES)
               this_row$synonym <- taxon_partial
               
               this_row$fuzzy_match <- ""
               
-              this_row$phylum <- matched_row$ClaPhylum
-              this_row$class <- matched_row$ClaClass
-              this_row$order <- matched_row$ClaOrder
-              this_row$family <- matched_row$ClaFamily
-              this_row$genus <- matched_row$ClaGenus
-              this_row$subgenus <- matched_row$ClaSubgenus
-              this_row$species <- matched_row$ClaSpecies
-              this_row$author <- matched_row$AUTHOR.ORIG
+              this_row$phylum <- matched_row$PHYLUM
+              this_row$class <- matched_row$CLASS
+              this_row$order <- matched_row$ORDER
+              this_row$family <- matched_row$FAMILY
+              this_row$genus <- matched_row$GENUS
+              this_row$subgenus <- matched_row$SUBGENUS
+              this_row$species <- matched_row$SPECIES
+              this_row$author <- matched_row$AUTHOR
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus subgenus epithet to synonym", name = "enm")
@@ -705,7 +705,7 @@ server <- function(input, output) {
             
             
             #4 match to: Genus subgenus epithet Author
-            taxon_list <- paste0(taxonomy$ClaGenus, " (", taxonomy$ClaSubgenus, ") ", taxonomy$ClaSpecies, " ", taxonomy$AUTHOR.ORIG)
+            taxon_list <- paste0(taxonomy$GENUS, " (", taxonomy$SUBGENUS, ") ", taxonomy$SPECIES, " ", taxonomy$AUTHOR)
             taxon_list <- gsub(" [(][)] ", " ", taxon_list)
             taxon_list <- gsub("[  ]", " ", taxon_list)
             
@@ -716,14 +716,14 @@ server <- function(input, output) {
               this_row$synonym <- ""
               this_row$fuzzy_match <- ""              
 
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+              this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+              this_row$class <- taxonomy$CLASS[this_match[1]]
+              this_row$order <- taxonomy$ORDER[this_match[1]]
+              this_row$family <- taxonomy$FAMILY[this_match[1]]
+              this_row$genus <- taxonomy$GENUS[this_match[1]]
+              this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+              this_row$species <- taxonomy$SPECIES[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus subgenus epithet Author", name = "enm")
@@ -733,7 +733,7 @@ server <- function(input, output) {
             
             
             #match to: Genus epithet subspecies Author but remove subspecies
-            taxon_list <- paste0(taxonomy$ClaGenus, " ", taxonomy$ClaSpecies, " ", taxonomy$AUTHOR.ORIG)
+            taxon_list <- paste0(taxonomy$GENUS, " ", taxonomy$SPECIES, " ", taxonomy$AUTHOR)
             taxon_list <- gsub("[  ]", " ", taxon_list)
             
             taxon_partial <- paste(strsplit(this_taxon_name, " ")[[1]][1], strsplit(this_taxon_name, " ")[[1]][2], strsplit(this_taxon_name, " ")[[1]][4])
@@ -745,14 +745,14 @@ server <- function(input, output) {
               this_row$synonym <- ""
               this_row$fuzzy_match <- ""
               
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+              this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+              this_row$class <- taxonomy$CLASS[this_match[1]]
+              this_row$order <- taxonomy$ORDER[this_match[1]]
+              this_row$family <- taxonomy$FAMILY[this_match[1]]
+              this_row$genus <- taxonomy$GENUS[this_match[1]]
+              this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+              this_row$species <- taxonomy$SPECIES[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus epithet subspecies Author but remove subspecies", name = "enm")
@@ -764,7 +764,7 @@ server <- function(input, output) {
             
             
             #match to: Genus epithet subspecies Author but remove subspecies and author
-            taxon_list <- paste0(taxonomy$ClaGenus, " ", taxonomy$ClaSpecies)
+            taxon_list <- paste0(taxonomy$GENUS, " ", taxonomy$SPECIES)
             taxon_list <- gsub("[  ]", " ", taxon_list)
             
             taxon_partial <- paste(strsplit(this_taxon_name, " ")[[1]][1], strsplit(this_taxon_name, " ")[[1]][2])
@@ -774,14 +774,14 @@ server <- function(input, output) {
               this_row$accepted_name <- taxon_list[this_match[1]]
               this_row$synonym <- ""
               this_row$fuzzy_match <- ""
-              this_row$phylum <- taxonomy$ClaPhylum[this_match[1]]
-              this_row$class <- taxonomy$ClaClass[this_match[1]]
-              this_row$order <- taxonomy$ClaOrder[this_match[1]]
-              this_row$family <- taxonomy$ClaFamily[this_match[1]]
-              this_row$genus <- taxonomy$ClaGenus[this_match[1]]
-              this_row$subgenus <- taxonomy$ClaSubgenus[this_match[1]]
-              this_row$species <- taxonomy$ClaSpecies[this_match[1]]
-              this_row$author <- taxonomy$AUTHOR.ORIG[this_match[1]]
+              this_row$phylum <- taxonomy$PHYLUM[this_match[1]]
+              this_row$class <- taxonomy$CLASS[this_match[1]]
+              this_row$order <- taxonomy$ORDER[this_match[1]]
+              this_row$family <- taxonomy$FAMILY[this_match[1]]
+              this_row$genus <- taxonomy$GENUS[this_match[1]]
+              this_row$subgenus <- taxonomy$SUBGENUS[this_match[1]]
+              this_row$species <- taxonomy$SPECIES[this_match[1]]
+              this_row$author <- taxonomy$AUTHOR[this_match[1]]
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus epithet subspecies Author but remove subspecies and author", name = "enm")
@@ -800,17 +800,17 @@ server <- function(input, output) {
               
               matched_row <- taxonomy[taxonomy$ID == this_id,]
               
-              this_row$accepted_name <- paste0(matched_row$ClaGenus, " ", matched_row$ClaSpecies)
+              this_row$accepted_name <- paste0(matched_row$GENUS, " ", matched_row$SPECIES)
               this_row$synonym <- taxon_partial
               this_row$fuzzy_match <- ""
-              this_row$phylum <- matched_row$ClaPhylum
-              this_row$class <- matched_row$ClaClass
-              this_row$order <- matched_row$ClaOrder
-              this_row$family <- matched_row$ClaFamily
-              this_row$genus <- matched_row$ClaGenus
-              this_row$subgenus <- matched_row$ClaSubgenus
-              this_row$species <- matched_row$ClaSpecies
-              this_row$author <- matched_row$AUTHOR.ORIG
+              this_row$phylum <- matched_row$PHYLUM
+              this_row$class <- matched_row$CLASS
+              this_row$order <- matched_row$ORDER
+              this_row$family <- matched_row$FAMILY
+              this_row$genus <- matched_row$GENUS
+              this_row$subgenus <- matched_row$SUBGENUS
+              this_row$species <- matched_row$SPECIES
+              this_row$author <- matched_row$AUTHOR
 
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("synonym", name = "enm")
@@ -846,19 +846,19 @@ server <- function(input, output) {
               
               matched_row <- taxonomy[taxonomy$ID == this_id,]
               
-              this_row$accepted_name <- paste0(matched_row$ClaGenus, " ", matched_row$ClaSpecies)
+              this_row$accepted_name <- paste0(matched_row$GENUS, " ", matched_row$SPECIES)
               this_row$synonym <- results_filtered$match
               
               this_row$fuzzy_match <- paste0(results_filtered$match, " (", results_filtered$score, ")")
               
-              this_row$phylum <- matched_row$ClaPhylum
-              this_row$class <- matched_row$ClaClass
-              this_row$order <- matched_row$ClaOrder
-              this_row$family <- matched_row$ClaFamily
-              this_row$genus <- matched_row$ClaGenus
-              this_row$subgenus <- matched_row$ClaSubgenus
-              this_row$species <- matched_row$ClaSpecies
-              this_row$author <- matched_row$AUTHOR.ORIG
+              this_row$phylum <- matched_row$PHYLUM
+              this_row$class <- matched_row$CLASS
+              this_row$order <- matched_row$ORDER
+              this_row$family <- matched_row$FAMILY
+              this_row$genus <- matched_row$GENUS
+              this_row$subgenus <- matched_row$SUBGENUS
+              this_row$species <- matched_row$SPECIES
+              this_row$author <- matched_row$AUTHOR
               
               resultsfile <- rbind(resultsfile, this_row)
               flog.info("Genus [Subgenus] species [author/subspecies/etc] to synonym fuzzy_match", name = "enm")
@@ -1008,14 +1008,14 @@ server <- function(input, output) {
   output$taxonomy_info <- renderUI({
     if (is.null(input$taxonomy)){
       HTML("<div class=\"panel panel-primary\"> <div class=\"panel-heading\"> <h3 class=\"panel-title\">The EPICC Taxonomy file should be encoded using \"UTF-8\" and have at least these 9 columns</h3> </div> <div class=\"panel-body\"> <ul>
-           <li>ClaPhylum</li>
-           <li>ClaClass</li>
-           <li>ClaOrder</li>
-           <li>ClaFamily</li>
-           <li>ClaGenus</li>
-           <li>ClaSubgenus</li>
-           <li>ClaSpecies</li>
-           <li>AUTHOR ORIG</li>
+           <li>PHYLUM</li>
+           <li>CLASS</li>
+           <li>ORDER</li>
+           <li>FAMILY</li>
+           <li>GENUS</li>
+           <li>SUBGENUS</li>
+           <li>SPECIES</li>
+           <li>AUTHOR</li>
            <li>SYNONYMS</li>
            </ul></div></div>")
     }
@@ -1066,7 +1066,7 @@ server <- function(input, output) {
               <dt>genus</dt><dd>The Genus of the accepted_name from the taxonomy file</dd>
               <dt>subgenus</dt><dd>The Subgenus of the accepted_name from the taxonomy file</dd>
               <dt>species</dt><dd>The Species of the accepted_name from the taxonomy file</dd>
-              <dt>author</dt><dd>The \"AUTHOR ORIG\" of the accepted_name from the taxonomy file</dd>
+              <dt>author</dt><dd>The \"AUTHOR\" of the accepted_name from the taxonomy file</dd>
          </dl>
         <p>If the Taxonomy column had more than one name, separated by pipes (|), each name is returned in a separate row.</p>
         <p>* Fuzzy matching uses the \"osa\" method in the function stringdist::stringdist(), for details see van der Loo (2014).</p>
