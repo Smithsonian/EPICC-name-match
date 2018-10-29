@@ -18,6 +18,23 @@ The process tries to match the string by looking at possible ways a scientific n
 
 If no matches are found, the system will try to find a match by performing an approximate string matching to a scientific name or a synonym.
 
+## Running in local computer
+
+To test the app locally, without the need of a server, just install R and Shiny. Then, run a command that will download the source files from Github. 
+
+R version 3.3 or better is required. After starting R, copy and paste these commands:
+
+```R
+install.packages("shiny", "DT", "dplyr", "stringr", "stringdist", "futile.logger")
+
+library(shiny)
+runGitHub("EPICC-name-match", "Smithsonian")
+```
+
+Please note that the installation of the required packages may take a few minutes to download and install.
+
+## Installation in Shiny server
+
 This app requires the following R packages:
 
  * shiny
