@@ -120,7 +120,7 @@ ui <- fluidPage(
           ),
   
   hr(),
-  HTML(paste0("<p><a href=\"http://dpo.si.edu\" target = _blank><img src=\"circlelogo.png\"> Digitization Program Office</a> | ", app_name, " ver. ", app_ver, " | <a href=\"", github_link, "\" target = _blank>Source code</a></p>"))
+  HTML(paste0("<p><a href=\"http://dpo.si.edu\" target = _blank><img src=\"dpologo.jpg\"></a> | ", app_name, " ver. ", app_ver, " | <a href=\"", github_link, "\" target = _blank>Source code</a></p>"))
 )
 
 

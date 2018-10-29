@@ -25,7 +25,7 @@ To test the app locally, without the need of a server, just install R and Shiny.
 R version 3.3 or better is required. After starting R, copy and paste these commands:
 
 ```R
-install.packages("shiny", "DT", "dplyr", "stringr", "stringdist", "futile.logger")
+install.packages(c("shiny", "DT", "dplyr", "stringr", "stringdist", "futile.logger"))
 
 library(shiny)
 runGitHub("EPICC-name-match", "Smithsonian")
@@ -47,5 +47,5 @@ This app requires the following R packages:
 To install:
 
 ```R
-install.packages("shiny", "DT", "dplyr", "stringr", "stringdist", "futile.logger")
+install.packages(c("shiny", "DT", "dplyr", "stringr", "stringdist", "futile.logger"))
 ```
