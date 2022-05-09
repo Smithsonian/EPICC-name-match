@@ -1,3 +1,5 @@
+**This repo is now archived since the same results can be achieved using OpenRefine in a simpler way.**
+
 # EPICC Name Match
 
 A Shiny app to help the NMNH Paleo collection on their digitization efforts. The app tries to match the scientific names from labels in the collection to the taxonomy by EPICC ([Eastern Pacific Invertebrate Communities of the Cenozoic](https://epicc.berkeley.edu/)). 
